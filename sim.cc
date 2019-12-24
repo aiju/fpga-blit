@@ -4,7 +4,7 @@
 #include <SDL.h>
 #include <err.h>
 #include <pthread.h>
-#include "Vtop.h"
+#include "Vblit.h"
 #if VM_TRACE
 #include "verilated_vcd_c.h"
 #else
@@ -14,7 +14,7 @@
 std::list<char> kbd;
 std::list<char> uart_in;
 std::list<char> uart_out;
-Vtop *tb;
+Vblit *tb;
 pthread_mutex_t uart_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void putkbd(char c)
@@ -41,7 +41,7 @@ void *recv_thread(void *)
 
 int main(int argc, char **argv) {
 	Verilated::commandArgs(argc, argv);
-	tb = new Vtop;
+	tb = new Vblit;
 	
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 		errx(1, "SDL_Init failed");
