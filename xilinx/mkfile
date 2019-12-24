@@ -1,0 +1,10 @@
+all:V: top.v top.xdc
+
+top.v:DV: blit.vlt
+	vlt -lc $prereq >$target
+
+top.xdc:DV: blit.vlt
+	vlt -lc -O xdc $prereq | grep -v 'IOSTANDARD.*comp_[pn]' >$target
+
+clean:V:
+	rm -f *.jou *.log

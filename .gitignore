@@ -1,1 +1,8 @@
 /obj_dir
+*.jou
+*.log
+usage_statistics_webtalk.html
+usage_statistics_webtalk.xml
+.Xil
+/xilinx/build
+*.vcd

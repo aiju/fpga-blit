@@ -1,0 +1,13 @@
+board aijuboard;
+
+files {
+	*.v
+	../*.v
+}
+
+design top {
+	regs {
+		reg_* map(auto);
+	}
+	blit;
+}
