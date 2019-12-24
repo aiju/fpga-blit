@@ -1,4 +1,6 @@
-module blit(
+module blit
+#(parameter HZ = 100_000_000)
+(
 	input wire clk,
 
 	input wire uart_in_valid,
@@ -73,7 +75,7 @@ module blit(
 	reg [15:0]	mouse_y;		// To regs_i of blit_regs.v
 	// End of automatics
 
-	blit_cpu cpu_i(/*AUTOINST*/
+	blit_cpu #(.HZ(HZ)) cpu_i(/*AUTOINST*/
 		       // Outputs
 		       .cpu_req		(cpu_req),
 		       .cpu_addr	(cpu_addr[23:0]),
@@ -194,7 +196,7 @@ module blit(
 			     .ram_ack		(ram_ack),
 			     .ram_rdata		(ram_rdata[15:0]));
 
-	blit_disp disp_i(/*AUTOINST*/
+	blit_disp #(.HZ(HZ)) disp_i(/*AUTOINST*/
 			 // Outputs
 			 .dma_req		(dma_req),
 			 .dma_addr		(dma_addr[17:0]),

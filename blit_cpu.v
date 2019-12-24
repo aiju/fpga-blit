@@ -1,4 +1,6 @@
-module blit_cpu(
+module blit_cpu
+#(parameter HZ = 100_000_000)
+(
 	input wire clk,
 	
 	output reg cpu_req,
@@ -30,23 +32,43 @@ module blit_cpu(
 	wire		oHALTEDn;		// From fx68k_i of fx68k.v
 	wire		oRESETn;		// From fx68k_i of fx68k.v
 	// End of automatics
+
+	localparam CPUHZ = 8_000_000;
+	/* verilator lint_off WIDTH */
+	/* verilator lint_off WIDTHCONCAT */
+	localparam [15:0] CPUDIV = {2 * CPUHZ, 16'b0} / HZ;
+	/* verilator lint_on WIDTH */
+	/* verilator lint_on WIDTHCONCAT */
 	
-	reg extReset;
-	wire pwrUp = extReset;
+	reg [15:0] div;
+	reg tick;
+	reg phase;
 	reg enPhi1;
 	reg enPhi2;
+	
+	always @(posedge clk) begin
+		{tick, div} <= div + CPUDIV;
+		enPhi1 <= 1'b0;
+		enPhi2 <= 1'b0;
+		if(tick) begin
+			if(phase)
+				enPhi2 <= 1'b1;
+			else
+				enPhi1 <= 1'b1;
+			phase <= !phase;
+		end
+	end
+
+	reg extReset;
+	wire pwrUp = extReset;
 	reg [3:0] resctr;
 	
 	initial begin
 		extReset = 1'b1;
-		enPhi1 = 1'b1;
-		enPhi2 = 1'b0;
 		resctr = 4'd15;
 	end
 	always @(posedge clk) begin
-		enPhi1 <= !enPhi1;
-		enPhi2 <= !enPhi2;
-		if(resctr > 0)
+		if(enPhi1 && resctr > 0)
 			resctr <= resctr - 1;
 		else
 			extReset <= 1'b0;
@@ -149,7 +171,3 @@ module blit_cpu(
 		      .iEdb		(iEdb[15:0]));
 
 endmodule
-
-// Local Variables:
-// verilog-library-directories:("." "fx68k")
-// End:
