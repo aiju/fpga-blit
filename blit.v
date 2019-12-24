@@ -211,7 +211,3 @@ module blit
 			 .dma_rdata		(dma_rdata[15:0]));
 
 endmodule
-
-// Local Variables:
-// verilog-library-directories:("." "fx68k")
-// End:
