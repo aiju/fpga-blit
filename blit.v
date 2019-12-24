@@ -5,22 +5,25 @@ module blit
 
 	input wire uart_in_valid,
 	input wire [7:0] uart_in_data,
-	output reg uart_in_ready,
+	output wire uart_in_ready,
 	
-	output reg uart_out_valid,
-	output reg [7:0] uart_out_data,
+	output wire uart_out_valid,
+	output wire [7:0] uart_out_data,
 	input wire uart_out_ready,
 	
 	input wire kbd_in_valid,
 	input wire [7:0] kbd_in_data,
-	output reg kbd_in_ready,
+	output wire kbd_in_ready,
 	
-	output reg kbd_out_valid,
-	output reg [7:0] kbd_out_data,
+	output wire kbd_out_valid,
+	output wire [7:0] kbd_out_data,
 	input wire kbd_out_ready,
 	
 	output wire pixel_valid,
-	output wire pixel
+	output wire pixel,
+	
+	input wire [15:0] mouse_x,
+	input wire [15:0] mouse_y
 
 );
 

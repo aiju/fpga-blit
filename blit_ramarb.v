@@ -6,8 +6,8 @@ module blit_ramarb(
 	input wire [15:0] cpu_ram_wdata,
 	input wire [1:0] cpu_ram_wstrb,
 	input wire cpu_ram_we,
-	output wire cpu_ram_ack,
-	output wire [15:0] cpu_ram_rdata,
+	output reg cpu_ram_ack,
+	output reg [15:0] cpu_ram_rdata,
 
 	input wire dma_req,
 	input wire [17:0] dma_addr,

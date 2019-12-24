@@ -15,11 +15,12 @@ module blit_cpu
 	input wire [7:1] irq
 );
 
+	wire E;
+
 	/*AUTOWIRE*/
 	// Beginning of automatic wires (for undeclared instantiated-module outputs)
 	wire		ASn;			// From fx68k_i of fx68k.v
 	wire		BGn;			// From fx68k_i of fx68k.v
-	logic		E;			// From fx68k_i of fx68k.v
 	wire		FC0;			// From fx68k_i of fx68k.v
 	wire		FC1;			// From fx68k_i of fx68k.v
 	wire		FC2;			// From fx68k_i of fx68k.v

@@ -11,7 +11,7 @@ module blit_disp
 	input wire dma_ack,
 	input wire [15:0] dma_rdata,
 	
-	output wire vblank,
+	output reg vblank,
 	
 	output reg pixel_valid,
 	output reg pixel
@@ -114,6 +114,7 @@ module blit_disp
 		end
 	end
 
+	assign fifo_read = (sr_rem == 0 || sr_rem == 1 && pxclk && active) && sr_ctr > 0 && !fifo_empty;
 	always @(posedge clk) begin
 		dma_req <= 1'b0;
 		if(fifo_alloc) begin
@@ -137,12 +138,6 @@ module blit_disp
 				sr_ctr <= HACT / 16;
 			end
 		end
-	end
-	
-
-
-	assign fifo_read = (sr_rem == 0 || sr_rem == 1 && pxclk && active) && sr_ctr > 0 && !fifo_empty;
-	always @(posedge clk) begin
 		pixel_valid <= 1'b0;
 		if(sr_rem > 0 && pxclk && active) begin
 			sr_rem <= sr_rem - 1;

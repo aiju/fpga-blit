@@ -8,7 +8,7 @@ module blit_bus(
 	input wire cpu_we,
 	output reg cpu_ack,
 	output reg [15:0] cpu_rdata,
-	output cpu_err,
+	output reg cpu_err,
 	
 	output reg rom_req,
 	output wire [15:0] rom_addr,
@@ -16,10 +16,10 @@ module blit_bus(
 	input wire [15:0] rom_rdata,
 	
 	output reg cpu_ram_req,
-	output reg [17:0] cpu_ram_addr,
+	output wire [17:0] cpu_ram_addr,
 	output wire [15:0] cpu_ram_wdata,
 	output wire [1:0] cpu_ram_wstrb,
-	output reg cpu_ram_we,
+	output wire cpu_ram_we,
 	input wire cpu_ram_ack,
 	input wire [15:0] cpu_ram_rdata,
 
