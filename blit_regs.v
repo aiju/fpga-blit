@@ -1,4 +1,4 @@
-module regs(
+module blit_regs(
 	input wire clk,
 	
 	input wire regs_req,

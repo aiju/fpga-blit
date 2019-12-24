@@ -1,4 +1,4 @@
-module ramarb(
+module blit_ramarb(
 	input wire clk,
 	
 	input wire cpu_ram_req,

@@ -1,4 +1,4 @@
-module disp
+module blit_disp
 #(parameter HZ = 100_000_000)
 (
 	input wire clk,

@@ -1,4 +1,4 @@
-module ram(
+module blit_ram(
 	input wire clk,
 	
 	input wire ram_req,

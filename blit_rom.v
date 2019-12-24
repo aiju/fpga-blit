@@ -1,4 +1,4 @@
-module rom(
+module blit_rom(
 	input wire clk,
 	
 	input wire rom_req,

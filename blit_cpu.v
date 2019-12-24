@@ -1,4 +1,4 @@
-module cpu(
+module blit_cpu(
 	input wire clk,
 	
 	output reg cpu_req,

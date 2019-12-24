@@ -1,4 +1,4 @@
-module bus(
+module blit_bus(
 	input wire clk,
 	
 	input wire cpu_req,
