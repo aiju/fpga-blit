@@ -11,7 +11,9 @@ module blit_rom(
 	
 	initial begin
 		$readmemh("rom.mem", rom);
+		`ifdef VERILATOR
 		rom[109] = 1;
+		`endif
 	end
 	
 	always @(posedge clk) begin

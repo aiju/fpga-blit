@@ -24,9 +24,6 @@ module regs(
 	input wire [7:0] kbd_out_data,
 	output wire kbd_out_ready,
 	
-	input wire pixel_valid,
-	input wire pixel,
-	
 	output reg [15:0] mouse_x,
 	output reg [15:0] mouse_y
 );
@@ -59,7 +56,6 @@ module regs(
 					reg_rdata <= {!uart_out_valid, 23'b0, uart_out_data};
 					uart_out_ready <= uart_out_valid;
 				end
-				8'h18: reg_rdata <= {23'b0, pixel_valid, pixel};
 				default: reg_rdata <= 0;
 				endcase
 		end

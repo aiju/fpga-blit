@@ -56,12 +56,12 @@ module axi3 #(
 );
 
 	localparam OKAY = 0;
-	localparam EXOKAY = 1;
+//	localparam EXOKAY = 1;
 	localparam SLVERR = 2;
 	localparam DECERR = 3;
-	localparam FIXED = 0;
+//	localparam FIXED = 0;
 	localparam INCR = 1;
-	localparam WRAP = 2;
+//	localparam WRAP = 2;
 	
 	reg [2:0] state;
 	localparam IDLE = 0;

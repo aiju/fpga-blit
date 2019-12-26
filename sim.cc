@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <SDL.h>
 #include <err.h>
-#include <pthread.h>
 #include "Vblit.h"
 #if VM_TRACE
 #include "verilated_vcd_c.h"
@@ -12,10 +11,17 @@
 #endif
 
 std::list<char> kbd;
-std::list<char> uart_in;
-std::list<char> uart_out;
+std::list<char> uart;
 Vblit *tb;
-pthread_mutex_t uart_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void putuart(char c)
+{
+	uart.push_back(c);
+	if(!tb->uart_in_valid){
+		tb->uart_in_valid = 1;
+		tb->uart_in_data = c;
+	}
+}
 
 void putkbd(char c)
 {
@@ -23,19 +29,6 @@ void putkbd(char c)
 	if(!tb->kbd_in_valid){
 		tb->kbd_in_valid = 1;
 		tb->kbd_in_data = c;
-	}
-}
-
-void *recv_thread(void *)
-{
-	char c;
-	
-	for(;;){
-		if(read(0, &c, 1) <= 0)
-			return NULL;
-		pthread_mutex_lock(&uart_mutex);
-		uart_in.push_back(c);
-		pthread_mutex_unlock(&uart_mutex);
 	}
 }
 
@@ -51,10 +44,7 @@ int main(int argc, char **argv) {
 		errx(1, "SDL_CreateWindowAndRenderer failed");
 	SDL_Surface *screen = SDL_GetWindowSurface(window);
 	SDL_RenderClear(renderer);
-	SDL_RenderPresent(renderer);
-	
-	pthread_t recv_thread_pid;
-	pthread_create(&recv_thread_pid, NULL, recv_thread, NULL);
+	SDL_RenderPresent(renderer);	
 
 #if VM_TRACE
 	Verilated::traceEverOn(true);
@@ -73,15 +63,23 @@ int main(int argc, char **argv) {
 		if((t & 0xff) == 0)
 			while(SDL_PollEvent(&ev)){
 				switch(ev.type){
+				case SDL_TEXTINPUT: {
+					for(char *p = ev.text.text; *p != 0; p++)
+						putkbd(*p);
+					break;
+				}
 				case SDL_QUIT: return 0;
 				}
 			}
 		if(!tb->clk){
 			if(tb->pixel_valid){
-				int c = tb->pixel ? (toggle ? 200 : 255) : (toggle ? 55 : 0);
-				SDL_SetRenderDrawColor(renderer, c, c, c, 255);
-				SDL_RenderDrawPoint(renderer, pixx, pixy);
-				if(pixx == 799){
+				for(int i = 0; i < 16; i++){
+					int c = (tb->pixel_data & 1<<15-i) ? (toggle ? 200 : 255) : (toggle ? 55 : 0);
+					SDL_SetRenderDrawColor(renderer, c, c, c, 255);
+					SDL_RenderDrawPoint(renderer, pixx, pixy);
+					pixx++;
+				}
+				if(pixx == 800){
 					pixx = 0;
 					SDL_RenderPresent(renderer);
 					if(pixy == 1023){
@@ -89,19 +87,17 @@ int main(int argc, char **argv) {
 						toggle = !toggle;
 					}else
 						pixy++;
-				}else
-					pixx++;
+				}
 			}
-			pthread_mutex_lock(&uart_mutex);
 			if(tb->uart_in_valid && tb->uart_in_ready){
-				uart_in.pop_front();
-				tb->uart_in_valid = 0;
+				uart.pop_front();
+				if(uart.size() > 0)
+					tb->uart_in_data = uart.front();
+				else
+					tb->uart_in_valid = 0;
 			}
-			if(uart_in.size() > 0){
-				tb->uart_in_valid = 1;
-				tb->uart_in_data = uart_in.front();
-			}
-			pthread_mutex_unlock(&uart_mutex);
+			if(tb->uart_out_valid)
+				putuart(tb->uart_out_data);
 			if(tb->kbd_in_valid && tb->kbd_in_ready){
 				kbd.pop_front();
 				if(kbd.size() > 0)

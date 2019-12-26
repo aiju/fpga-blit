@@ -20,7 +20,10 @@ module blit
 	input wire kbd_out_ready,
 	
 	output wire pixel_valid,
-	output wire pixel,
+	output wire [15:0] pixel_data,
+	
+	input wire dmahstart,
+	input wire vblank,
 	
 	input wire [15:0] mouse_x,
 	input wire [15:0] mouse_y
@@ -70,27 +73,21 @@ module blit
 	wire [15:0]	rom_addr;		// From bus_i of blit_bus.v
 	wire [15:0]	rom_rdata;		// From rom_i of blit_rom.v
 	wire		rom_req;		// From bus_i of blit_bus.v
-	wire		vblank;			// From disp_i of blit_disp.v
-	// End of automatics
-	/*AUTOREGINPUT*/
-	// Beginning of automatic reg inputs (for undeclared instantiated-module inputs)
-	reg [15:0]	mouse_x;		// To regs_i of blit_regs.v
-	reg [15:0]	mouse_y;		// To regs_i of blit_regs.v
 	// End of automatics
 
 	blit_cpu #(.HZ(HZ)) cpu_i(/*AUTOINST*/
-		       // Outputs
-		       .cpu_req		(cpu_req),
-		       .cpu_addr	(cpu_addr[23:0]),
-		       .cpu_wdata	(cpu_wdata[15:0]),
-		       .cpu_wstrb	(cpu_wstrb[1:0]),
-		       .cpu_we		(cpu_we),
-		       // Inputs
-		       .clk		(clk),
-		       .cpu_ack		(cpu_ack),
-		       .cpu_rdata	(cpu_rdata[15:0]),
-		       .cpu_err		(cpu_err),
-		       .irq		(irq[7:1]));
+				  // Outputs
+				  .cpu_req		(cpu_req),
+				  .cpu_addr		(cpu_addr[23:0]),
+				  .cpu_wdata		(cpu_wdata[15:0]),
+				  .cpu_wstrb		(cpu_wstrb[1:0]),
+				  .cpu_we		(cpu_we),
+				  // Inputs
+				  .clk			(clk),
+				  .cpu_ack		(cpu_ack),
+				  .cpu_rdata		(cpu_rdata[15:0]),
+				  .cpu_err		(cpu_err),
+				  .irq			(irq[7:1]));
 		 
 	blit_bus bus_i(/*AUTOINST*/
 		       // Outputs
@@ -199,18 +196,19 @@ module blit
 			     .ram_ack		(ram_ack),
 			     .ram_rdata		(ram_rdata[15:0]));
 
-	blit_disp #(.HZ(HZ)) disp_i(/*AUTOINST*/
+	blit_disp disp_i(/*AUTOINST*/
 			 // Outputs
 			 .dma_req		(dma_req),
 			 .dma_addr		(dma_addr[17:0]),
-			 .vblank		(vblank),
 			 .pixel_valid		(pixel_valid),
-			 .pixel			(pixel),
+			 .pixel_data		(pixel_data[15:0]),
 			 // Inputs
 			 .clk			(clk),
 			 .daddr			(daddr[17:0]),
 			 .dstat			(dstat[15:0]),
 			 .dma_ack		(dma_ack),
-			 .dma_rdata		(dma_rdata[15:0]));
+			 .dma_rdata		(dma_rdata[15:0]),
+			 .dmahstart		(dmahstart),
+			 .vblank		(vblank));
 
 endmodule

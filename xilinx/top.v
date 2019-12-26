@@ -1,5 +1,8 @@
 module top(
-
+	input wire [1:0]  refclk,
+	inout wire  auxn,
+	inout wire  auxp,
+	output wire [3:0]  tx
 );
 
 	wire [15:0]  mouse_x;
@@ -9,29 +12,42 @@ module top(
 	wire [2:0]  _gp0awprot;
 	wire [11:0]  _gp0arid;
 	wire [11:0]  _gp0awid;
-	wire  pixel;
+	wire  dport_reg_wr;
+	wire [15:0]  pixel_data;
+	wire  dport_aux_wr;
 	wire [3:0]  _gp0arcache;
+	wire [31:0]  dport_reg_rdata;
 	wire [3:0]  _gp0awcache;
-	wire [3:0]  reg_addr;
+	wire [31:0]  dport_reg_wdata;
+	wire [7:0]  reg_addr;
 	wire [3:0]  _fclkclk;
 	wire  clk = _fclkclk[0];
+	wire [31:0]  dport_aux_rdata;
+	wire [31:0]  dport_aux_wdata;
 	wire  _gp0arvalid;
 	wire  _gp0arready;
 	wire  _gp0awvalid;
 	wire [31:0]  _outaddr;
 	wire  _gp0awready;
+	wire  dport_reg_ack;
 	wire  kbd_out_valid;
+	wire [3:0]  dport_reg_wstrb;
 	wire  kbd_out_ready;
 	wire [7:0]  kbd_in_data;
 	wire  uart_in_valid;
+	wire  dport_aux_ack;
 	wire  uart_in_ready;
 	wire [1:0]  _gp0arburst;
 	wire [7:0]  uart_out_data;
+	wire  dport_reg_req;
+	wire  dport_reg_err;
 	wire [1:0]  _gp0awburst;
 	wire [31:0]  _gp0rdata;
 	wire [31:0]  _gp0wdata;
 	wire [3:0]  _gp0arlen;
+	wire  dport_aux_req;
 	wire [3:0]  _gp0awlen;
+	wire  vblank;
 	wire [1:0]  _gp0bresp;
 	wire  reg_wr;
 	wire [3:0]  _gp0arqos;
@@ -48,10 +64,13 @@ module top(
 	wire [31:0]  reg_rdata;
 	wire [11:0]  _gp0wid;
 	wire [31:0]  reg_wdata;
+	wire [7:0]  dport_reg_addr;
 	wire [31:0]  _outrdata;
 	wire  rstn = _fclkresetn[0];
+	wire  dmahstart;
 	wire [31:0]  _outwdata;
 	wire  reg_ack;
+	wire [4:0]  dport_aux_addr;
 	wire [31:0]  _gp0araddr;
 	wire  kbd_in_valid;
 	wire  _gp0bvalid;
@@ -96,8 +115,6 @@ module top(
 		.kbd_out_valid(kbd_out_valid),
 		.kbd_out_data(kbd_out_data),
 		.kbd_out_ready(kbd_out_ready),
-		.pixel_valid(pixel_valid),
-		.pixel(pixel),
 		.mouse_x(mouse_x),
 		.mouse_y(mouse_y)
 	);
@@ -116,7 +133,36 @@ module top(
 		.kbd_out_data(kbd_out_data),
 		.kbd_out_ready(kbd_out_ready),
 		.pixel_valid(pixel_valid),
-		.pixel(pixel)
+		.pixel_data(pixel_data),
+		.dmahstart(dmahstart),
+		.vblank(vblank),
+		.mouse_x(mouse_x),
+		.mouse_y(mouse_y)
+	);
+	dport dport0(
+		.reg_addr(dport_reg_addr),
+		.reg_rdata(dport_reg_rdata),
+		.reg_wdata(dport_reg_wdata),
+		.reg_wr(dport_reg_wr),
+		.reg_req(dport_reg_req),
+		.reg_ack(dport_reg_ack),
+		.reg_wstrb(dport_reg_wstrb),
+		.reg_err(dport_reg_err),
+		.aux_addr(dport_aux_addr),
+		.aux_wdata(dport_aux_wdata),
+		.aux_req(dport_aux_req),
+		.aux_wr(dport_aux_wr),
+		.aux_ack(dport_aux_ack),
+		.aux_rdata(dport_aux_rdata),
+		.refclk(refclk),
+		.auxp(auxp),
+		.auxn(auxn),
+		.tx(tx),
+		.clk(clk),
+		.pixel_valid(pixel_valid),
+		.pixel_data(pixel_data),
+		.dmahstart(dmahstart),
+		.vblank(vblank)
 	);
 	_intercon _intercon(
 		.clk(clk),
@@ -127,6 +173,20 @@ module top(
 		.reg_rdata(reg_rdata),
 		.reg_wdata(reg_wdata),
 		.reg_wr(reg_wr),
+		.dport_reg_req(dport_reg_req),
+		.dport_reg_ack(dport_reg_ack),
+		.dport_reg_addr(dport_reg_addr),
+		.dport_reg_rdata(dport_reg_rdata),
+		.dport_reg_wdata(dport_reg_wdata),
+		.dport_reg_wr(dport_reg_wr),
+		.dport_reg_err(dport_reg_err),
+		.dport_reg_wstrb(dport_reg_wstrb),
+		.dport_aux_req(dport_aux_req),
+		.dport_aux_ack(dport_aux_ack),
+		.dport_aux_addr(dport_aux_addr),
+		.dport_aux_rdata(dport_aux_rdata),
+		.dport_aux_wdata(dport_aux_wdata),
+		.dport_aux_wr(dport_aux_wr),
 		._outaddr(_outaddr),
 		._outrdata(_outrdata),
 		._outwdata(_outwdata),
@@ -248,12 +308,28 @@ module _intercon(
 	output wire [31:0] reg_addr,
 	input wire [31:0] reg_rdata,
 	output wire [31:0] reg_wdata,
-	output wire reg_wr
+	output wire reg_wr,
+	output reg dport_reg_req,
+	input wire dport_reg_ack,
+	input wire dport_reg_err,
+	output wire [31:0] dport_reg_addr,
+	input wire [31:0] dport_reg_rdata,
+	output wire [31:0] dport_reg_wdata,
+	output wire dport_reg_wr,
+	output wire [3:0] dport_reg_wstrb,
+	output reg dport_aux_req,
+	input wire dport_aux_ack,
+	output wire [31:0] dport_aux_addr,
+	input wire [31:0] dport_aux_rdata,
+	output wire [31:0] dport_aux_wdata,
+	output wire dport_aux_wr
 );
 
 	localparam IDLE = 0;
 	localparam WAIT_reg_ = 1;
-	reg [1:0] state;
+	localparam WAIT_dport_reg_ = 2;
+	localparam WAIT_dport_aux_ = 3;
+	reg [2:0] state;
 
 	always @(posedge clk or negedge rstn)
 		if(!rstn) begin
@@ -262,9 +338,13 @@ module _intercon(
 			_outerr <= 1'b0;
 			_outrdata <= 32'bx;
 			reg_req <= 1'b0;
+			dport_reg_req <= 1'b0;
+			dport_aux_req <= 1'b0;
 		end else begin
 			_outack <= 1'b0;
 			reg_req <= 1'b0;
+			dport_reg_req <= 1'b0;
+			dport_aux_req <= 1'b0;
 			case(state)
 			IDLE:
 				if(_outreq)
@@ -273,9 +353,17 @@ module _intercon(
 						_outack <= 1'b1;
 						_outerr <= 1'b1;
 					end
-					30'b000000000000000000000000000zzzz: begin
+					30'b00000000000000000000000zzzzzzzz: begin
 						state <= WAIT_reg_;
 						reg_req <= 1'b1;
+					end
+					30'b00000000000000000000001zzzzzzzz: begin
+						state <= WAIT_dport_reg_;
+						dport_reg_req <= 1'b1;
+					end
+					30'b00000000000000000000010000zzzzz: begin
+						state <= WAIT_dport_aux_;
+						dport_aux_req <= 1'b1;
 					end
 					endcase
 			WAIT_reg_:
@@ -285,10 +373,31 @@ module _intercon(
 					_outerr <= 1'b0;
 					_outrdata <= reg_rdata;
 				end
+			WAIT_dport_reg_:
+				if(dport_reg_ack) begin
+					state <= IDLE;
+					_outack <= 1'b1;
+					_outerr <= dport_reg_err;
+					_outrdata <= dport_reg_rdata;
+				end
+			WAIT_dport_aux_:
+				if(dport_aux_ack) begin
+					state <= IDLE;
+					_outack <= 1'b1;
+					_outerr <= 1'b0;
+					_outrdata <= dport_aux_rdata;
+				end
 			endcase
 		end
 
 	assign reg_addr = _outaddr;
 	assign reg_wr = _outwr;
 	assign reg_wdata = _outwdata;
+	assign dport_reg_addr = _outaddr;
+	assign dport_reg_wr = _outwr;
+	assign dport_reg_wdata = _outwdata;
+	assign dport_reg_wstrb = _outwstrb;
+	assign dport_aux_addr = _outaddr;
+	assign dport_aux_wr = _outwr;
+	assign dport_aux_wdata = _outwdata;
 endmodule

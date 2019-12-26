@@ -3,6 +3,7 @@ board aijuboard;
 files {
 	*.v
 	../*.v
+	dport/*.v
 }
 
 design top {
@@ -10,4 +11,12 @@ design top {
 		reg_* map(auto);
 	}
 	blit;
+	dport {
+		reg_* = dport_reg_* map(auto);
+		aux_* = dport_aux_* map(auto);
+		refclk <refclk>;
+		auxp <auxp>;
+		auxn <auxn>;
+		tx <tx>;
+	}
 }
