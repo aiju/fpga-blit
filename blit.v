@@ -26,8 +26,8 @@ module blit
 	input wire vblank,
 	
 	input wire [15:0] mouse_x,
-	input wire [15:0] mouse_y
-
+	input wire [15:0] mouse_y,
+	input wire [2:0] mouse_but
 );
 
 	/*AUTOWIRE*/
@@ -142,36 +142,37 @@ module blit
 		       .ram_wstrb	(ram_wstrb[1:0]),
 		       .ram_we		(ram_we));
 
-	blit_regs regs_i(/*AUTOINST*/
-			 // Outputs
-			 .regs_ack		(regs_ack),
-			 .regs_rdata		(regs_rdata[15:0]),
-			 .irq			(irq[7:1]),
-			 .bootup		(bootup),
-			 .daddr			(daddr[17:0]),
-			 .dstat			(dstat[15:0]),
-			 .uart_in_ready		(uart_in_ready),
-			 .uart_out_valid	(uart_out_valid),
-			 .uart_out_data		(uart_out_data[7:0]),
-			 .kbd_in_ready		(kbd_in_ready),
-			 .kbd_out_valid		(kbd_out_valid),
-			 .kbd_out_data		(kbd_out_data[7:0]),
-			 // Inputs
-			 .clk			(clk),
-			 .regs_req		(regs_req),
-			 .regs_addr		(regs_addr[7:0]),
-			 .regs_wdata		(regs_wdata[15:0]),
-			 .regs_wstrb		(regs_wstrb[1:0]),
-			 .regs_we		(regs_we),
-			 .uart_in_valid		(uart_in_valid),
-			 .uart_in_data		(uart_in_data[7:0]),
-			 .uart_out_ready	(uart_out_ready),
-			 .kbd_in_valid		(kbd_in_valid),
-			 .kbd_in_data		(kbd_in_data[7:0]),
-			 .kbd_out_ready		(kbd_out_ready),
-			 .vblank		(vblank),
-			 .mouse_x		(mouse_x[15:0]),
-			 .mouse_y		(mouse_y[15:0]));
+	blit_regs #(.HZ(HZ)) regs_i(/*AUTOINST*/
+				    // Outputs
+				    .regs_ack		(regs_ack),
+				    .regs_rdata		(regs_rdata[15:0]),
+				    .irq		(irq[7:1]),
+				    .bootup		(bootup),
+				    .daddr		(daddr[17:0]),
+				    .dstat		(dstat[15:0]),
+				    .uart_in_ready	(uart_in_ready),
+				    .uart_out_valid	(uart_out_valid),
+				    .uart_out_data	(uart_out_data[7:0]),
+				    .kbd_in_ready	(kbd_in_ready),
+				    .kbd_out_valid	(kbd_out_valid),
+				    .kbd_out_data	(kbd_out_data[7:0]),
+				    // Inputs
+				    .clk		(clk),
+				    .regs_req		(regs_req),
+				    .regs_addr		(regs_addr[7:0]),
+				    .regs_wdata		(regs_wdata[15:0]),
+				    .regs_wstrb		(regs_wstrb[1:0]),
+				    .regs_we		(regs_we),
+				    .uart_in_valid	(uart_in_valid),
+				    .uart_in_data	(uart_in_data[7:0]),
+				    .uart_out_ready	(uart_out_ready),
+				    .kbd_in_valid	(kbd_in_valid),
+				    .kbd_in_data	(kbd_in_data[7:0]),
+				    .kbd_out_ready	(kbd_out_ready),
+				    .vblank		(vblank),
+				    .mouse_x		(mouse_x[15:0]),
+				    .mouse_y		(mouse_y[15:0]),
+				    .mouse_but		(mouse_but[2:0]));
 
 	blit_ramarb ramarb_i(/*AUTOINST*/
 			     // Outputs

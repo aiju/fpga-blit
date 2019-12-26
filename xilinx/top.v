@@ -71,6 +71,7 @@ module top(
 	wire [31:0]  _outwdata;
 	wire  reg_ack;
 	wire [4:0]  dport_aux_addr;
+	wire [2:0]  mouse_but;
 	wire [31:0]  _gp0araddr;
 	wire  kbd_in_valid;
 	wire  _gp0bvalid;
@@ -81,6 +82,7 @@ module top(
 	wire  uart_out_valid;
 	wire [1:0]  _gp0arlock;
 	wire  reg_req;
+	wire  reg_err;
 	wire  _outack;
 	wire  uart_out_ready;
 	wire [1:0]  _gp0awlock;
@@ -102,6 +104,7 @@ module top(
 		.reg_wdata(reg_wdata),
 		.reg_ack(reg_ack),
 		.reg_rdata(reg_rdata),
+		.reg_err(reg_err),
 		.clk(clk),
 		.uart_in_valid(uart_in_valid),
 		.uart_in_data(uart_in_data),
@@ -116,7 +119,8 @@ module top(
 		.kbd_out_data(kbd_out_data),
 		.kbd_out_ready(kbd_out_ready),
 		.mouse_x(mouse_x),
-		.mouse_y(mouse_y)
+		.mouse_y(mouse_y),
+		.mouse_but(mouse_but)
 	);
 	blit blit0(
 		.clk(clk),
@@ -137,7 +141,8 @@ module top(
 		.dmahstart(dmahstart),
 		.vblank(vblank),
 		.mouse_x(mouse_x),
-		.mouse_y(mouse_y)
+		.mouse_y(mouse_y),
+		.mouse_but(mouse_but)
 	);
 	dport dport0(
 		.reg_addr(dport_reg_addr),
@@ -173,6 +178,7 @@ module top(
 		.reg_rdata(reg_rdata),
 		.reg_wdata(reg_wdata),
 		.reg_wr(reg_wr),
+		.reg_err(reg_err),
 		.dport_reg_req(dport_reg_req),
 		.dport_reg_ack(dport_reg_ack),
 		.dport_reg_addr(dport_reg_addr),
@@ -305,6 +311,7 @@ module _intercon(
 	output reg [31:0] _outrdata,
 	output reg reg_req,
 	input wire reg_ack,
+	input wire reg_err,
 	output wire [31:0] reg_addr,
 	input wire [31:0] reg_rdata,
 	output wire [31:0] reg_wdata,
@@ -370,7 +377,7 @@ module _intercon(
 				if(reg_ack) begin
 					state <= IDLE;
 					_outack <= 1'b1;
-					_outerr <= 1'b0;
+					_outerr <= reg_err;
 					_outrdata <= reg_rdata;
 				end
 			WAIT_dport_reg_:

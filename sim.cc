@@ -35,6 +35,9 @@ void putkbd(char c)
 int main(int argc, char **argv) {
 	Verilated::commandArgs(argc, argv);
 	tb = new Vblit;
+	char c;
+	while(read(0, &c, 1) > 0)
+		putuart(c);
 	
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 		errx(1, "SDL_Init failed");
@@ -55,9 +58,12 @@ int main(int argc, char **argv) {
 
 	int pixx = 0, pixy = 0, toggle = 1;
 	
-	tb->uart_out_ready = 1;
+	tb->uart_out_ready = 0;
 	tb->kbd_out_ready = 1;
 	
+	const int rowdiv = 65536.0 * 1060 * 60 / 100e6;
+	int rowctr = 0;
+	int y = 0;
 	for(int t = 0; !Verilated::gotFinish(); t++) {
 		SDL_Event ev;
 		if((t & 0xff) == 0)
@@ -72,6 +78,16 @@ int main(int argc, char **argv) {
 				}
 			}
 		if(!tb->clk){
+			rowctr += rowdiv;
+			if((rowctr>>16) != 0){
+				rowctr -= 1<<16;
+				tb->dmahstart = y < 1024;
+				tb->vblank = y == 1024;
+				if(++y == 1060) y = 0;
+			}else{
+				tb->dmahstart = 0;
+				tb->vblank = 0;
+			}
 			if(tb->pixel_valid){
 				for(int i = 0; i < 16; i++){
 					int c = (tb->pixel_data & 1<<15-i) ? (toggle ? 200 : 255) : (toggle ? 55 : 0);
@@ -96,7 +112,8 @@ int main(int argc, char **argv) {
 				else
 					tb->uart_in_valid = 0;
 			}
-			if(tb->uart_out_valid)
+			tb->uart_out_ready = t % 200 == 0;
+			if(tb->uart_out_valid && tb->uart_out_ready)
 				putuart(tb->uart_out_data);
 			if(tb->kbd_in_valid && tb->kbd_in_ready){
 				kbd.pop_front();

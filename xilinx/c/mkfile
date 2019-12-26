@@ -1,0 +1,8 @@
+</arm/mkfile
+
+OFILES=\
+	main.$O\
+	dport.$O\
+	telnet.$O\
+
+</sys/src/cmd/mkone

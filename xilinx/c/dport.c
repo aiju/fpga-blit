@@ -1,7 +1,8 @@
 #include <u.h>
 #include <libc.h>
-
-uchar *mmio;
+#include <thread.h>
+#include "dat.h"
+#include "fns.h"
 
 enum {
 	CTRL = 0x00,
@@ -61,7 +62,6 @@ aux_read(int a)
 {
 	u32int s;
 	u8int *m;
-	int i;
 	
 	print("read AUX %.3x = ", a);
 	m = mmio + 0x200;
@@ -86,7 +86,6 @@ aux_write(int a, u8int v)
 {
 	u32int s;
 	u8int *m;
-	int i;
 	
 	print("write AUX %.3x = %.2x\n", a, v);
 	m = mmio + 0x200;
@@ -106,24 +105,16 @@ aux_write(int a, u8int v)
 }
 
 void
-main()
+dport(void)
 {
-	ulong *r;
-	uchar *rr, s, s1;
-	ulong addr;
+	uchar s;
 	int twolane, fast, emph0, emph1, swing0, swing1, ctr, lasts, stage;
 	
-	twolane = 1;
-	fast = 1;
 	emph0 = 0;
 	swing0 = 0;
 	emph1 = 0;
 	swing1 = 0;
 	
-	mmio = segattach(0, "axi", nil, 1048576*4);
-	if(mmio == (uchar*)-1)
-		sysfatal("segattach: %r");
-
 	dp_write(CTRL, 0);
 	dp_write(MISC, 0x21);
 
@@ -180,8 +171,4 @@ main()
 	}
 	dp_write(CTRL, 0x1000 | swing1 << 10 | swing0 << 8 | emph1 << 6 | emph0 << 4 | twolane << 1 | fast);
 	aux_write(TRAINING_PATTERN_SET, 0);
-	for(;;){
-		sleep(1000);
-		aux_read(0x205);
-	}
 }
