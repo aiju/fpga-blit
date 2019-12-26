@@ -89,7 +89,7 @@ module axi3 #(
 	
 	initial begin
 		state = IDLE;
-		axiarready = 1'b0;
+		axiarready = 1'b1;
 		axiawready = 1'b1;
 		axirvalid = 1'b0;
 		axibvalid = 1'b0;
@@ -133,14 +133,15 @@ module axi3 #(
 					axiawready <= 0;
 				end
 				if(axiarvalid) begin
-					axiaraddr0 <= nextaddr(axiaraddr, axiarburst, axiarsize);
 					axiarburst0 <= axiarburst;
 					axiarlen0 <= axiarlen;
 					axiarsize0 <= axiarsize;
 					axirid <= axiarid;
-					if(axiawvalid)
+					if(axiawvalid) begin
+						axiaraddr0 <= axiaraddr;
 						rpend <= 1'b1;
-					else begin
+					end else begin
+						axiaraddr0 <= nextaddr(axiaraddr, axiarburst, axiarsize);
 						outreq <= 1;
 						outaddr <= axiaraddr;
 						outwr <= 0;
